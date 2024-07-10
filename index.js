@@ -7,9 +7,8 @@ const nodemailer = require('nodemailer');
 const app = express();
 const prisma = new PrismaClient();
 app.use(bodyParser.json());
-app.use(cors()); // Enable CORS for all routes
+app.use(cors()); 
 
-// Configure the mail transporter
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
@@ -18,7 +17,7 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-// Define the send referral email function
+
 const sendReferralEmail = async (referrerName, referrerEmail, refereeName, refereeEmail, message) => {
     const mailOptions = {
       from: process.env.EMAIL_USER,
@@ -31,7 +30,6 @@ const sendReferralEmail = async (referrerName, referrerEmail, refereeName, refer
   };
   
 
-// Define your endpoints here
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
@@ -50,7 +48,7 @@ app.post('/referral', async (req, res) => {
   }
 
   try {
-    // Create a new referral record
+  
     const referral = await prisma.referral.create({
       data: {
         referrerName,
@@ -61,7 +59,7 @@ app.post('/referral', async (req, res) => {
       },
     });
 
-    // Send the referral email
+    
     await sendReferralEmail(referrerName, referrerEmail, refereeName, refereeEmail, message);
 
     res.status(201).json(referral);
