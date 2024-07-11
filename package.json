@@ -17,6 +17,7 @@
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
     "mailgun-js": "^0.22.0",
+    "mailgun.js": "^10.2.1",
     "mysql2": "^3.10.2",
     "nodemailer": "^6.9.14",
     "prisma": "^5.16.2"
