@@ -2,7 +2,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const { PrismaClient } = require('@prisma/client');
 const cors = require('cors');
-const { MailtrapClient } = require('mailtrap');
+const nodemailer = require('nodemailer');
 require('dotenv').config();
 
 const app = express();
@@ -10,28 +10,32 @@ const prisma = new PrismaClient();
 app.use(bodyParser.json());
 app.use(cors()); // Enable CORS for all routes
 
-// Configure the Mailtrap client
-const TOKEN = process.env.MAILTRAP_TOKEN;
-const ENDPOINT = 'https://send.api.mailtrap.io/';
-const client = new MailtrapClient({ endpoint: ENDPOINT, token: TOKEN });
+// Configure the Gmail transporter
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: process.env.GMAIL_USER,
+    pass: process.env.GMAIL_PASS,
+  },
+});
 
 const sender = {
-  email: 'email@example.com',
+  email: process.env.GMAIL_USER,
   name: 'Accredian Team',
 };
 
 // Define the send referral email function
 const sendReferralEmail = async (referrerName, referrerEmail, refereeName, refereeEmail, message) => {
-  const recipients = [{ email: refereeEmail }];
+  const mailOptions = {
+    from: sender,
+    to: refereeEmail,
+    subject: 'Exclusive Invitation: Join Accredian with Bonus Benefits!',
+    text: `Hi ${refereeName},\n\nYou have been specially referred by ${referrerName} (${referrerEmail}) to join the Accredian community. At Accredian, we empower professionals with top-notch programs designed to elevate your career.\n\n${referrerName} shared the following message with you:\n"${message}"\n\nAs a valued referral, you are eligible for exclusive bonuses when you join using the link below. Don't miss this opportunity to enhance your skills and achieve your career goals with Accredian!\n\nJoin now: https://accredian.com/\n\nBest regards,\nThe Accredian Team\n\nP.S. This referral link offers special bonuses just for you. Act now to take full advantage of this exclusive offer!`,
+    category: 'Referral',
+  };
 
   try {
-    await client.send({
-      from: sender,
-      to: recipients,
-      subject: 'Exclusive Invitation: Join Accredian with Bonus Benefits!',
-      text: `Hi ${refereeName},\n\nYou have been specially referred by ${referrerName} (${referrerEmail}) to join the Accredian community. At Accredian, we empower professionals with top-notch programs designed to elevate your career.\n\n${referrerName} shared the following message with you:\n"${message}"\n\nAs a valued referral, you are eligible for exclusive bonuses when you join using the link below. Don't miss this opportunity to enhance your skills and achieve your career goals with Accredian!\n\nJoin now: https://accredian.com/\n\nBest regards,\nThe Accredian Team\n\nP.S. This referral link offers special bonuses just for you. Act now to take full advantage of this exclusive offer!`,
-      category: 'Referral',
-    });
+    await transporter.sendMail(mailOptions);
     console.log('Referral email sent successfully');
   } catch (error) {
     console.error('Error sending referral email:', error);
